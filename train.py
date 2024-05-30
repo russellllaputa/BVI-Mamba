@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='Main code')
 parser.add_argument("--config", default='STASUNet.yml', type=str, help="training config file")
-parser.add_argument('--resultDir', type=str, default='STASUNet', help='save output')
+parser.add_argument('--resultDir', type=str, default='results', help='save output')
 parser.add_argument('--savemodelname', type=str, default='model')
 parser.add_argument('--maxepoch', type=int, default=15)
 parser.add_argument('--retrain', action='store_true')
