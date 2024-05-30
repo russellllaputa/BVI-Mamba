@@ -4,7 +4,7 @@ dataset:
   val_file: "/home/edward/data/lowlight_dataset/test_list.txt"
   root_distorted: "/home/edward/data/lowlight_dataset/input"
   root_restored: "/home/edward/data/lowlight_dataset/gt"
-  image_size: 128
+  image_size: 256
   num_frames: 5
   num_workers: 1
   aug_topleft: False
@@ -15,6 +15,7 @@ model:
   num_in_ch: 3
   num_out_ch: 3
   num_feat: 16
+  embed_dim: 16
   window_size: 8
   patch_norm: True
   deformable_groups: 8
@@ -26,6 +27,8 @@ model:
 
 training:
   batch_size: 4
+  maxepoch: 20
+  lr: 0.0001
   
 
 
