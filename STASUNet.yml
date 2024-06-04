@@ -4,7 +4,7 @@ dataset:
   val_file: "/home/edward/data/lowlight_dataset/test_list.txt"
   root_distorted: "/home/edward/data/lowlight_dataset/input"
   root_restored: "/home/edward/data/lowlight_dataset/gt"
-  image_size: 256
+  image_size: 512
   num_frames: 5
   num_workers: 1
   aug_topleft: False
@@ -26,9 +26,8 @@ model:
   num_heads: [8, 8, 8, 8]
 
 training:
-  batch_size: 4
+  batch_size: 1
   maxepoch: 20
   lr: 0.0001
-  
 
 

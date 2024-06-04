@@ -287,14 +287,14 @@ class AttenBlock(nn.Module):
         heads (int): 注意力机制的头数。
         num_blocks (int): 该层中重复模块的数量。
     """
-    def __init__(self, dim, dim_head=64, heads=8, num_blocks=2,d_state = 16):
+    def __init__(self, dim, heads=8, num_blocks=2, d_state=16):
 
         super().__init__()
         self.blocks = nn.ModuleList([])
         for _ in range(num_blocks):
             self.blocks.append(nn.ModuleList([
-                IFA(dim_2=dim,dim = dim,num_heads = heads,ffn_expansion_factor=2.66 ,bias=True, LayerNorm_type='WithBias'),
-                SS2D(d_model=dim,dropout=0,d_state =d_state),   # 加入Mamba的SS2D模块，输入参数都为源代码指定参数
+                IFA(dim_2=dim, dim=dim, num_heads=heads, ffn_expansion_factor=2.66, bias=True, LayerNorm_type='WithBias'),
+                SS2D(d_model=dim, dropout=0, d_state=d_state),   # 加入Mamba的SS2D模块，输入参数都为源代码指定参数
                 PreNorm(dim, FeedForward(dim=dim))  # 预归一化层，后跟前馈网络,这一部分相当于LN+FFN
             ]))
 
@@ -754,7 +754,7 @@ class BasicLayer(nn.Module):
 
         # build blocks
         self.blocks = nn.ModuleList([
-            AttenBlock(dim=dim, dim_head=64, heads=num_heads, num_blocks=1, d_state = 16)
+            AttenBlock(dim=dim, heads=num_heads, num_blocks=1, d_state=16)
             for i in range(depth)])
         # self.blocks = nn.ModuleList([
         #     SwinTransformerBlock(dim=dim, input_resolution=input_resolution,
@@ -781,7 +781,7 @@ class BasicLayer(nn.Module):
             # x = x.reshape(b, c, -1).transpose(1,2) # B, L, C
             x = self.downsample(x)
             hw = (hw[0]//2, hw[1]//2)
-        return x, hw
+        return x, hw 
 
     def extra_repr(self) -> str:
         return f"dim={self.dim}, input_resolution={self.input_resolution}, depth={self.depth}"
@@ -828,7 +828,7 @@ class BasicLayer_up(nn.Module):
 
         # build blocks
         self.blocks = nn.ModuleList([
-            AttenBlock(dim=dim, dim_head=64, heads=num_heads, num_blocks=1, d_state=16)
+            AttenBlock(dim=dim, heads=num_heads, num_blocks=1, d_state=16)
             for i in range(depth)])
         
         # # build blocks

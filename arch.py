@@ -270,55 +270,32 @@ class STASUNet(nn.Module):
     def forward_features(self, x):
         residual = x
         x, hw = self.patch_embed(x) # B, L, C
-        # ph, pw = x_hw
         # if self.ape:
         #     x = x + self.absolute_pos_embed
         x = self.pos_drop(x)
         x_downsample = []
         x_downsample.append(x)
-        # b = x.shape[0]
-        # down_factor = 1
         for layer in self.layers:            
             x, hw = layer(x, hw) # b, L, c
             x_downsample.append(x)
-
-        # breakpoint()
-        # x = x.reshape(b, x.shape[1], -1).transpose(1,2) # B, L, C
         x = self.norm(x)  # B L C
 
         return x, residual, x_downsample, hw
 
 
-        # b = x.shape[0]
-        # down_factor = 1
-        # for layer in self.layers:            
-        #     x = x.reshape(b, ph//down_factor, pw//down_factor, x.shape[-1]) # b ph, pw, c
-        #     x = x.permute(0, 3, 1, 2) # b, c, ph, pw
-        #     x = layer(x) # b, L, c
-        #     down_factor = down_factor * 2
-        #     x_downsample.append(x)
-
-        # x = x.reshape(b, x.shape[1], -1).transpose(1,2) # B, L, C
-        # x = self.norm(x)  # B L C
 
     # Dencoder and Skip connection
     def forward_up_features(self, x, x_downsample, hw):
-        # up_factor = 1
-        b = x.shape[0]
-        # h, w = hw
+
         for inx, layer_up in enumerate(self.layers_up):
             if inx == 0:
-                # x = x.reshape(b, h, w, x.shape[-1]) # b ph, pw, c
-                # x = x.permute(0, 3, 1, 2) # b, c, ph, pw
                 x = layer_up(x) # b, L, c
                 hw = ( int(hw[0]*2), int(hw[1]*2) )
             else:
                 x = torch.cat([x, x_downsample[3 - inx]], -1)  # concat last dimension
                 x = self.concat_back_dim[inx](x)
                 x, hw = layer_up(x, hw)
-            # up_factor = up_factor * 2
 
-        # x = x.reshape(b, x.shape[1], -1).transpose(1,2) # B, L, C
         x = self.norm_up(x)  # B L C
 
         return x
@@ -330,7 +307,6 @@ class STASUNet(nn.Module):
 
         if self.final_upsample == "Dual up-sample":
             x = self.up(x)
-            # x = x.view(B, 4 * H, 4 * W, -1)
             x = x.permute(0, 3, 1, 2)  # B,C,H,W
 
         return x
