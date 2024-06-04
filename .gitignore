@@ -162,6 +162,7 @@ cython_debug/
 
 # some folders
 results/
+restulsb/
 tb_logger/
 experiments/
 data/*
