@@ -17,6 +17,7 @@ from tqdm import tqdm
 parser = argparse.ArgumentParser(description='Test code')
 parser.add_argument("--config", default='STASUNet.yml', type=str, help="training config file")
 parser.add_argument('--resultDir', type=str, default='results', help='save output location')
+parser.add_argument('--checkpoint_path', type=str, default='/home/edward/BVI-Mamba/results/DVR/best_model.pth.tar', help='save output location')
 parser.add_argument('--savemodelname', type=str, default='model')
 parser.add_argument('--retrain', action='store_true')
 args = parser.parse_args()
@@ -53,7 +54,7 @@ else:
     print("please specify model name!")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-checkpoint_path = '/home/edward/BVI-Mamba/results/best_model.pth.tar'
+checkpoint_path = args.checkpoint_path
 try:
     model.load_state_dict(torch.load(checkpoint_path),map_location=device)
 except:
@@ -162,8 +163,9 @@ for _count, sample in enumerate(tqdm(val_data, desc="Processing")):
 
     psnrvalue = peak_signal_noise_ratio (gt, pred, data_range=255)
     ssimvalue = structural_similarity(gt, pred, channel_axis=2, data_range=255, multichannel=True)
-    pred_tensor = torch.tensor(pred.transpose((2, 0, 1)), dtype=torch.float32)
-    gt_tensor = torch.tensor(pred.transpose((2, 0, 1)), dtype=torch.float32)
+    pred_tensor = torch.tensor((pred/255).transpose((2, 0, 1)), dtype=torch.float32)
+    gt_tensor = torch.tensor((gt/255).transpose((2, 0, 1)), dtype=torch.float32)
+
     lpipsvalue = lpips_model(pred_tensor, gt_tensor).item()
     
     list_psnr.append(psnrvalue)
@@ -183,7 +185,3 @@ with open(output_file, 'a') as file:
     file.write(f'Average LPIPS: {np.mean(list_lpips)}\n')
 
 print(f'Values saved to {output_file}')
-
-
-   
-

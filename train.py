@@ -13,8 +13,8 @@ from tqdm import tqdm
 from skimage.metrics import peak_signal_noise_ratio 
 
 parser = argparse.ArgumentParser(description='Main code')
-parser.add_argument("--config", default='STASUNet.yml', type=str, help="training config file")
-parser.add_argument('--resultDir', type=str, default='results', help='save output location')
+parser.add_argument("--config", default='STASUNet-SDSD.yml', type=str, help="training config file")
+parser.add_argument('--resultDir', type=str, default='results/SDSD', help='save output location')
 parser.add_argument('--savemodelname', type=str, default='model')
 parser.add_argument('--retrain', action='store_true')
 
@@ -70,12 +70,12 @@ def train():
         print("please specify model name!")
 
     if args.retrain:
-        models = glob.glob(os.path.join(args.resultDirModel, args.savemodelname + '_ep*.pth.tar'))
+        models = glob.glob(os.path.join(resultDirModel, args.savemodelname + '_ep*.pth.tar'))
         if len(models)>0:
             # get the last model
             epoch_start = max([int(os.path.basename(model).split('_ep')[1].split('.')[0]) for model in models])
             print("The latest epoch is: ", epoch_start)
-        model.load_state_dict(torch.load(os.path.join(args.resultDirModel, args.savemodelname + '_ep'+str(epoch_start)+'.pth.tar'),map_location=device))
+        model.load_state_dict(torch.load(os.path.join(resultDirModel, args.savemodelname + '_ep'+str(epoch_start)+'.pth.tar'),map_location=device))
         epoch_start += 1 # only increase if further training
 
     model = model.to(device)
@@ -104,7 +104,7 @@ def train():
                 model.eval()   # Set model to evaluate mode
                 data = val_data
             running_loss = 0.0
-
+            psnr_list  = []
             for i, sample in enumerate(tqdm(data, desc='Epoch ' + str(epoch))):
                 # print(sample['image'].shape)
                 # print(sample['groundtruth'].shape)
@@ -120,13 +120,11 @@ def train():
                     output_detach = np.clip(output_detach, -1, 1)
                     output_detach = (output_detach*0.5 + 0.5)*255
 
-                    gt = labels.squeeze(0).cpu().numpy().astype('float32').transpose((1, 2, 0))
-                    print(gt.max())
-                    print('------------------------')
-                    print(output_detach.shape)
-                    print(gt.shape)
+                    gt = labels.squeeze(0).cpu().numpy().astype('float32').transpose((1, 2, 0))*255
                     psnrvalue = peak_signal_noise_ratio (gt, output_detach, data_range=255)
-                    print('PSNR:', np.mean(psnrvalue))
+                    psnr_list.append(psnrvalue)
+                    if i % 100 == 0:
+                        tqdm.write('PSNR: {:.3f}'.format(np.mean(psnr_list)))
                     # if (i < 10): # load training samples
                     #     output = outputs.clone()
                     #     output = output.squeeze(0)
@@ -134,7 +132,6 @@ def train():
                     #     output = output.transpose((1, 2, 0))
                     #     output = (output*0.5 + 0.5)*255
                     #     cv2.imwrite(os.path.join(resultDirOut, 'training'+ str(epoch) + '_'+str(i)+ '.png'), output.astype(np.uint8))
-
                     loss = criterion(outputs, labels)
                     if phase == 'train':
                         loss.backward()

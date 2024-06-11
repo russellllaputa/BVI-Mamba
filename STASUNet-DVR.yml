@@ -1,0 +1,33 @@
+dataset:
+  type: "DRVLowLight"
+  train_file: "/mnt/e/datasets/1_SMD/train_list.txt"
+  val_file: "/mnt/e/datasets/1_SMD/test_list.txt"
+  root_distorted: "/mnt/e/datasets/1_SMD/VBM4D_rawRGB"
+  root_restored: "/mnt/e/datasets/1_SMD/long"
+  image_size: 512
+  num_frames: 5
+  num_workers: 1
+  aug_topleft: False
+
+model:
+  network: "STASUNet"
+  patch_size: 4 
+  num_in_ch: 3
+  num_out_ch: 3
+  num_feat: 16
+  embed_dim: 16
+  window_size: 8
+  patch_norm: True
+  deformable_groups: 8
+  num_extract_block: 5
+  num_reconstruct_block: 10
+  hr_in: True
+  depths: [8, 8, 8, 8]
+  num_heads: [8, 8, 8, 8]
+
+training:
+  batch_size: 1
+  maxepoch: 20
+  lr: 0.0001
+
+
