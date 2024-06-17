@@ -12,7 +12,7 @@ from einops import rearrange
 import math
 import warnings
 from torch.nn.init import _calculate_fan_in_and_fan_out
-from SS2D_arch import SS2D
+from arch.SS2D_arch import SS2D
 from IFA_arch import IFA
 import sys
 print(sys.path)
