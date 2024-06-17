@@ -95,8 +95,8 @@ class PCDAlignment(nn.Module):
         feat = self.lrelu(self.cas_dcnpack(feat, offset))
         return feat
 
-class STASUNet(nn.Module):
-    """ STA-SUNet for low-light video enhancement
+class BVIMamba(nn.Module):
+    """ BVIMamba for low-light video enhancement
 
     Ref Paper:
         EDVR: Video Restoration with Enhanced Deformable Convolutional Networks
@@ -135,7 +135,7 @@ class STASUNet(nn.Module):
                  window_size = 7,
                  patch_norm=False,
                  final_upsample="Dual up-sample"):
-        super(STASUNet, self).__init__()
+        super(BVIMamba, self).__init__()
         if center_frame_idx is None:
             self.center_frame_idx = num_frame // 2
         else:
@@ -373,7 +373,7 @@ class STASUNet(nn.Module):
 
 if __name__ == '__main__':
     from fvcore.nn import FlopCountAnalysis
-    model = STASUNet(num_in_ch=3,
+    model = BVIMamba(num_in_ch=3,
                  num_out_ch=3,
                  num_feat=16,
                  num_frame=5,

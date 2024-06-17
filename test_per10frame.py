@@ -17,7 +17,7 @@ from tqdm import tqdm
 parser = argparse.ArgumentParser(description='Test code')
 parser.add_argument("--config", default='STASUNet.yml', type=str, help="training config file")
 parser.add_argument('--resultDir', type=str, default='results', help='save output location')
-parser.add_argument('--checkpoint_path', type=str, default='/home/edward/BVI-Mamba/results/DVR/best_model.pth.tar', help='save output location')
+parser.add_argument('--checkpoint_path', type=str, default='/home/edward/BVI-Mamba/results/SDSD/best_model.pth.tar', help='save output location')
 parser.add_argument('--savemodelname', type=str, default='model')
 parser.add_argument('--retrain', action='store_true')
 args = parser.parse_args()

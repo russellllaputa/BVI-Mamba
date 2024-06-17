@@ -167,3 +167,6 @@ tb_logger/
 experiments/
 data/*
 !data/.gitignore
+try.py
+TestResults_results.txt
+Radar_drawing.ipynb

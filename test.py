@@ -15,7 +15,7 @@ from scipy.stats import norm
 
 parser = argparse.ArgumentParser(description='Test code')
 parser.add_argument("--config", default='STASUNet.yml', type=str, help="training config file")
-parser.add_argument('--resultDir', type=str, default='results', help='save output location')
+parser.add_argument('--resultDir', type=str, default='results/BVI', help='save output location')
 parser.add_argument('--savemodelname', type=str, default='model')
 parser.add_argument('--retrain', action='store_true')
 args = parser.parse_args()
@@ -159,7 +159,7 @@ for sample in val_data:
     pred_tensor = torch.tensor(pred.transpose((2, 0, 1)), dtype=torch.float32)
     gt_tensor = torch.tensor(pred.transpose((2, 0, 1)), dtype=torch.float32)
     lpipsvalue = lpips_model(pred_tensor, gt_tensor).item()
-    # print('PSNR:', np.mean(psnrvalue))
+    print('PSNR:', np.mean(psnrvalue))
     # print('SSIM:', np.mean(ssimvalue))
     # print('LPIPS:', np.mean(ssimvalue))
 

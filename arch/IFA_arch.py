@@ -145,29 +145,3 @@ class IFA(nn.Module):
         input_R = input_R + self.ffn(self.norm2(input_R))
         return input_R
 
-
-if __name__ == '__main__':
-    # 假设输入的通道数 c = 64, 图像尺寸 h = w = 32
-    input_channels = 40
-    image_height = 256
-    image_width = 256
-    batch_size = 1  # 假设批大小为4
-
-    # 创建IFA的实例
-    # 假设我们使用以下参数：
-    dim = 40  # 输出通道数
-    num_heads = 8 # 注意力头数
-    ffn_expansion_factor = 2.0  # 前馈网络的维度扩展因子
-    bias = True  # 是否在卷积中使用偏置
-    LayerNorm_type = 'WithBias'  # 使用带偏置的层归一化
-
-    # 实例化IFA
-    transformer_block = IFA(dim_2=input_channels, dim=dim, num_heads=num_heads, ffn_expansion_factor=ffn_expansion_factor, bias=bias, LayerNorm_type=LayerNorm_type)
-
-    # 创建一个假的输入张量以测试模型
-    input_R = torch.randn(batch_size, input_channels, image_height, image_width)
-    input_S = torch.randn(batch_size, input_channels, image_height, image_width)
-
-    # 执行前向传播
-    output = transformer_block(input_R, input_S)
-    print(output.shape)  # 应该输出形状为 [b, c, h, w]
