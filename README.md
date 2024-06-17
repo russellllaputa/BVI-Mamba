@@ -1,4 +1,4 @@
-# BVI-CDM
+# BVI-Mamba
 
 ## Dataset
 
