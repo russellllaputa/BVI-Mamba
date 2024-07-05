@@ -14,6 +14,7 @@ from skimage.metrics import structural_similarity
 import lpips
 from scipy.stats import norm
 from tqdm import tqdm
+import torch.nn.functional as F
 
 parser = argparse.ArgumentParser(description='Test code')
 parser.add_argument("--config", default='STASUNet.yml', type=str, help="training config file")
@@ -47,9 +48,14 @@ with open(args.config, "r") as f:
     config = yaml.safe_load(f)
 config = dict2namespace(config)
 
+
 model = STASUNet(num_in_ch=config.model.num_in_ch,num_out_ch=config.model.num_out_ch,num_feat=config.model.num_feat,num_frame=config.dataset.num_frames,deformable_groups=config.model.deformable_groups,num_extract_block=config.model.num_extract_block,
-                num_reconstruct_block=config.model.num_reconstruct_block,center_frame_idx=None,hr_in=config.model.hr_in,img_size=config.dataset.image_size,patch_size=config.model.patch_size,embed_dim=config.model.embed_dim, depths=config.model.depths,num_heads=config.model.num_heads,
+                num_reconstruct_block=config.model.num_reconstruct_block,center_frame_idx=None,hr_in=config.model.hr_in,
+                img_size=[1088, 1920],
+                patch_size=config.model.patch_size,
+                embed_dim=config.model.embed_dim, depths=config.model.depths,num_heads=config.model.num_heads,
                 window_size = config.model.window_size,patch_norm=config.model.patch_norm,final_upsample="Dual up-sample")
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 checkpoint_path = args.checkpoint_path
@@ -65,22 +71,6 @@ except:
 model = model.to(device)
 model.eval()
 
-# crop input size
-overlapRatio = 1./4.
-hpatch = config.dataset.image_size
-wpatch = config.dataset.image_size
-hgap = int(float(hpatch)*overlapRatio)
-wgap = int(float(wpatch)*overlapRatio)
-# Create weight for each patch
-a = norm(hpatch/2, hpatch/6).pdf(np.arange(hpatch)) # gaussian weights along width
-b = norm(wpatch/2, wpatch/6).pdf(np.arange(wpatch)) # gaussian weights along height
-wmap = np.matmul(a[np.newaxis].T,b[np.newaxis]) # 2D weight map
-wmap = wmap/wmap.sum()
-# Repeat the 2D weight map along the third dimension
-wmap = np.repeat(wmap[:, :, np.newaxis], 3, axis=2)
-
-# =====================================================================
-
 # Read folder names from the testing txt file
 with open(config.dataset.val_file, 'r') as file:
     testfolder_names = file.read().splitlines()
@@ -93,68 +83,31 @@ list_psnr = []
 list_ssim = []
 list_lpips = []
 
-# initialize a counter
-frame_counter = 0
-
 for _count, sample in enumerate(tqdm(val_data, desc="Processing")):
     # from tensor to numpy
     img = sample['image']
     img = img.squeeze()
     img = img.cpu().numpy()
 
-    frame_counter += 1
-    
-    # Run through each overlaping patch
-    himg = img.shape[0]
-    wimg = img.shape[1]
+    img = img.transpose((3, 2, 0, 1))
+    img = torch.from_numpy(img)
+    img = (img-0.5)/0.5
+    img = img.unsqueeze(0)
+    inputs = img.to(device)
+    padding = (0, 0, 4, 4)
+    padded_inputs = padded_x = F.pad(inputs, padding, mode='constant', value=0)
 
-    weightMap = np.zeros((himg,wimg,3),np.float32)
-    probMap = np.zeros((himg,wimg,3),np.float32)
+    with torch.no_grad():
+        output = model(padded_inputs)
+        output = output[:,:, 4:output.size(2)-4, :]
+        output = output.squeeze(0)
+        output = output.cpu().numpy()
+        output = output.transpose((1, 2, 0))
+        output = np.clip(output, -1, 1)
+        output = (output*0.5 + 0.5)*255
 
-    if frame_counter % 10 != 0:
-        continue
-    # print(f"calculate metrics for image {sample['img_id'][0]}")
-    # stitch patches into frame
-    for starty in np.concatenate((np.arange( 0, himg-hpatch, hgap),np.array([himg-hpatch])),axis=0):
-        for startx in np.concatenate((np.arange( 0, wimg-wpatch, wgap),np.array([wimg-wpatch])),axis=0):
-            crop_img = img[starty:starty+hpatch, startx:startx+wpatch]
-
-            weightMap[starty:starty+hpatch, startx:startx+wpatch] += wmap
-                
-            # reshape and totensor
-            image = crop_img
-            if config.model.network=='STASUNet':
-                image = image.transpose((3, 2, 0, 1))
-            else:
-                image = image.transpose((2, 0, 1))
-            image = torch.from_numpy(image)
-            if config.model.network=='STASUNet':
-                image = (image-0.5)/0.5
-            else:
-                vallist = [0.5]*image.shape[0]
-                normmid = transforms.Normalize(vallist, vallist)
-                image = normmid(image)
-            image = image.unsqueeze(0)
-
-            inputs = image.to(device)
-            with torch.no_grad():
-                output = model(inputs)
-                output = output.squeeze(0)
-                output = output.cpu().numpy()
-                output = output.transpose((1, 2, 0))
-
-            probMap[starty:starty+hpatch, startx:startx+wpatch] += output*wmap
-
-    # normalise weight
-    probMap /= weightMap
-    # clip to range [-1,1]
-    probMap = np.clip(probMap, -1, 1)
-    probMap = (probMap*0.5 + 0.5)*255
-
-    # if int(subname[-1].split('.')[0]) < 10:  # only save the first 10 output frames for each scene 
-    # cv2.imwrite(os.path.join(resultDirOutImg, sample['img_id'][0]+'.png'),probMap.astype(np.uint8))
-
-    pred = probMap
+    pred = output
+    cv2.imwrite(os.path.join(resultDirOutImg, sample['img_id'][0]+'.png'),pred.astype(np.uint8))
     gt = sample['groundtruth'].squeeze(0)
     gt = gt.cpu().numpy()
     gt = gt.astype('float32')*255

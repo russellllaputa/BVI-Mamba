@@ -4,7 +4,7 @@ import numpy as np
 
 class RandomCrop(object):
     def __init__(self, output_size, topleft=False):
-        assert isinstance(output_size, (int, tuple))
+        assert isinstance(output_size, (int, tuple, list))
         if isinstance(output_size, int):
             self.output_size = (output_size, output_size)
         else:

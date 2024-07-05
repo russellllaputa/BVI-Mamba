@@ -10,7 +10,7 @@ dataset:
   aug_topleft: False
 
 model:
-  network: "BVIMamba"
+  network: "STASUNet"
   patch_size: 4 
   num_in_ch: 3
   num_out_ch: 3

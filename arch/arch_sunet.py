@@ -13,7 +13,7 @@ import math
 import warnings
 from torch.nn.init import _calculate_fan_in_and_fan_out
 from arch.SS2D_arch import SS2D
-from IFA_arch import IFA
+from arch.IFA_arch import IFA
 import sys
 print(sys.path)
 
@@ -661,7 +661,9 @@ class PatchEmbed(nn.Module):
 
     def __init__(self, img_size=224, patch_size=4, in_chans=3, embed_dim=96, norm_layer=None):
         super().__init__()
-        img_size = to_2tuple(img_size)
+        if not isinstance(img_size, (tuple, list)):
+            img_size = to_2tuple(img_size)
+        
         patch_size = to_2tuple(patch_size)
         patches_resolution = [img_size[0] // patch_size[0], img_size[1] // patch_size[1]]
 

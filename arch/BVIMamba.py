@@ -1,8 +1,8 @@
 import torch
 from torch import nn as nn
 from torch.nn import functional as F
-from arch_util import DCNv2Pack, ResidualBlockNoBN, make_layer
-from arch_sunet import *
+from arch.arch_util import DCNv2Pack, ResidualBlockNoBN, make_layer
+from arch.arch_sunet import *
 
 
 class PCDAlignment(nn.Module):
@@ -95,7 +95,7 @@ class PCDAlignment(nn.Module):
         feat = self.lrelu(self.cas_dcnpack(feat, offset))
         return feat
 
-class BVIMamba(nn.Module):
+class STASUNet(nn.Module):
     """ BVIMamba for low-light video enhancement
 
     Ref Paper:
@@ -127,7 +127,7 @@ class BVIMamba(nn.Module):
                  num_reconstruct_block=10,
                  center_frame_idx=None,
                  hr_in=True,
-                 img_size=224,
+                 img_size=[512, 512],
                  patch_size=4,
                  embed_dim=64, 
                  depths=[2, 2, 2, 2],
@@ -135,7 +135,10 @@ class BVIMamba(nn.Module):
                  window_size = 7,
                  patch_norm=False,
                  final_upsample="Dual up-sample"):
-        super(BVIMamba, self).__init__()
+        super(STASUNet, self).__init__()
+
+        if isinstance (img_size, int):
+            img_size = [img_size, img_size] 
         if center_frame_idx is None:
             self.center_frame_idx = num_frame // 2
         else:
@@ -224,7 +227,7 @@ class BVIMamba(nn.Module):
                                       int(embed_dim * 2 ** (
                                               self.num_layers - 1 - i_layer))) if i_layer > 0 else nn.Identity()
             if i_layer == 0:
-                layer_up = UpSample(input_resolution=patches_resolution[0] // (2 ** (self.num_layers - 1 - i_layer)),
+                layer_up = UpSample(input_resolution=(patches_resolution[0] // (2 ** (self.num_layers - 1 - i_layer)), patches_resolution[1] // (2 ** (self.num_layers - 1 - i_layer))),
                                     in_channels=int(embed_dim * 2 ** (self.num_layers - 1 - i_layer)), scale_factor=2)
             else:
                 layer_up = BasicLayer_up(dim=int(embed_dim * 2 ** (self.num_layers - 1 - i_layer)),
@@ -249,7 +252,7 @@ class BVIMamba(nn.Module):
         self.norm_up = norm_layer(self.embed_dim)
 
         if self.final_upsample == "Dual up-sample":
-            self.up = UpSample(input_resolution=(img_size // patch_size, img_size // patch_size),
+            self.up = UpSample(input_resolution=(img_size[0] // patch_size, img_size[1] // patch_size),
                                in_channels=embed_dim, scale_factor=4)
             self.output = nn.Conv2d(in_channels=embed_dim, out_channels=self.out_chans, kernel_size=3, stride=1,
                                     padding=1, bias=False)  # kernel = 1
