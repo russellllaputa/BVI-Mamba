@@ -44,3 +44,14 @@ python train.py
 ```
 python test_fullresolution.py
 ```
+
+## Citation
+If you use the BVI-Mamba code or BVI-RLV dataset in your research and find this useful, please consider citing our work:
+```
+@article{Lin:BVI-RLV:2024,
+  title={{BVI-RLV: A} Fully Registered Dataset and Benchmarks for Low-Light Video Enhancement},
+  author={R Lin and N Anantrasirichai and G Huang and J Lin and Q Sun and A Malyugina and DR Bull},
+  journal={arXiv preprint arXiv:2407.03535},
+  year={2024}
+}
+```
