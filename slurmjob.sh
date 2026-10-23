@@ -16,4 +16,4 @@ conda activate /user/home/kc24142/miniconda3/envs/Retinexformer
 
 cd /user/work/kc24142/BVI-Mamba
 
-python train.py --config STASUNet-DID.yml
+python train.py --config BVIMamba-DID.yml

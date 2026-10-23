@@ -2,7 +2,7 @@ import argparse
 import torch
 import torch.nn as nn
 import numpy as np
-from arch.BVIMamba import STASUNet
+from arch.BVIMamba import BVIMamba
 from torchvision import transforms 
 import os
 import glob
@@ -17,7 +17,7 @@ from tqdm import tqdm
 import torch.nn.functional as F
 
 parser = argparse.ArgumentParser(description='Test code')
-parser.add_argument("--config", default='STASUNet.yml', type=str, help="training config file")
+parser.add_argument("--config", default='BVIMamba.yml', type=str, help="training config file")
 parser.add_argument('--resultDir', type=str, default='results', help='save output location')
 parser.add_argument('--checkpoint_path', type=str, default='/home/edward/BVI-Mamba/results/SDSD/best_model.pth.tar', help='save output location')
 parser.add_argument('--savemodelname', type=str, default='model')
@@ -49,7 +49,7 @@ with open(args.config, "r") as f:
 config = dict2namespace(config)
 
 
-model = STASUNet(num_in_ch=config.model.num_in_ch,num_out_ch=config.model.num_out_ch,num_feat=config.model.num_feat,num_frame=config.dataset.num_frames,deformable_groups=config.model.deformable_groups,num_extract_block=config.model.num_extract_block,
+model = BVIMamba(num_in_ch=config.model.num_in_ch,num_out_ch=config.model.num_out_ch,num_feat=config.model.num_feat,num_frame=config.dataset.num_frames,deformable_groups=config.model.deformable_groups,num_extract_block=config.model.num_extract_block,
                 num_reconstruct_block=config.model.num_reconstruct_block,center_frame_idx=None,hr_in=config.model.hr_in,
                 img_size=[1088, 1920],
                 patch_size=config.model.patch_size,

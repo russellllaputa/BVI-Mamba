@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-from arch import STASUNet
+from arch.BVIMamba import BVIMamba
 import time
 import os
 import glob
@@ -13,7 +13,7 @@ from tqdm import tqdm
 from skimage.metrics import peak_signal_noise_ratio 
 
 parser = argparse.ArgumentParser(description='Main code')
-parser.add_argument("--config", default='STASUNet-SDSD.yml', type=str, help="training config file")
+parser.add_argument("--config", default='BVIMamba-SDSD.yml', type=str, help="training config file")
 parser.add_argument('--resultDir', type=str, default='results/SDSD', help='save output location')
 parser.add_argument('--savemodelname', type=str, default='model')
 parser.add_argument('--retrain', action='store_true')
@@ -62,8 +62,8 @@ def train():
     if not os.path.exists(resultDirOut):
         os.mkdir(resultDirOut)
 
-    if config.model.network=='STASUNet':
-        model = STASUNet(num_in_ch=config.model.num_in_ch,num_out_ch=config.model.num_out_ch,num_feat=config.model.num_feat,num_frame=config.dataset.num_frames,deformable_groups=config.model.deformable_groups,num_extract_block=config.model.num_extract_block,
+    if config.model.network=='BVIMamba':
+        model = BVIMamba(num_in_ch=config.model.num_in_ch,num_out_ch=config.model.num_out_ch,num_feat=config.model.num_feat,num_frame=config.dataset.num_frames,deformable_groups=config.model.deformable_groups,num_extract_block=config.model.num_extract_block,
                         num_reconstruct_block=config.model.num_reconstruct_block,center_frame_idx=None,hr_in=config.model.hr_in,img_size=config.dataset.image_size,patch_size=config.model.patch_size,embed_dim=config.model.embed_dim, depths=config.model.depths,num_heads=config.model.num_heads,
                         window_size = config.model.window_size,patch_norm=config.model.patch_norm,final_upsample="Dual up-sample")
     else:

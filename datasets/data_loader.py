@@ -58,7 +58,7 @@ class LowLightDataset(Dataset):
 
         return all_files
 
-    def __init__(self, train_file, train, root_distorted, root_restored, network='STASUNet', numframes=5, transform=None):
+    def __init__(self, train_file, train, root_distorted, root_restored, network='BVIMamba', numframes=5, transform=None):
         self.root_distorted = root_distorted
         self.root_restored = root_restored
         self.transform = transform
@@ -101,14 +101,14 @@ class LowLightDataset(Dataset):
             # Load the input image
             input_frame = cv2.imread(new_input_path,cv2.IMREAD_COLOR)
             input_frame = input_frame.astype('float32')
-            if self.network=='STASUNet':
+            if self.network=='BVIMamba':
                 input_frame = input_frame[..., np.newaxis]
 
             if first_frame == True:
                 image = input_frame/255.
                 first_frame = False 
             else: 
-                if self.network=='STASUNet':
+                if self.network=='BVIMamba':
                     image = np.append(image,input_frame/255.,axis=3)
                 else: # PCDUNet
                     image = np.append(image,input_frame/255.,axis=2)

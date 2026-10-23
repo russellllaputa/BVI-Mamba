@@ -30,14 +30,14 @@ class RandomCrop(object):
         return {'image': image, 'groundtruth': groundtruth}
 
 class ToTensor(object):
-    def __init__(self, network='STASUNet'):
+    def __init__(self, network='BVIMamba'):
         self.network = network
     def __call__(self, sample):
         image, groundtruth = sample['image'], sample['groundtruth']
         # swap color axis because
         # numpy image: H x W x C or H x W x C x T
         # torch image: C x H x W or T x C x H x W  
-        if self.network=='STASUNet':
+        if self.network=='BVIMamba':
             image = image.transpose((3, 2, 0, 1))
         else:
             image = image.transpose((2, 0, 1))
@@ -45,7 +45,7 @@ class ToTensor(object):
         image = torch.from_numpy(image.copy())
         groundtruth = torch.from_numpy(groundtruth.copy())
         # image
-        if self.network=='STASUNet':
+        if self.network=='BVIMamba':
             image = (image-0.5)/0.5 # to range [-1,1]
         else:
             # handle multi-channels

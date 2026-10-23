@@ -95,7 +95,7 @@ class PCDAlignment(nn.Module):
         feat = self.lrelu(self.cas_dcnpack(feat, offset))
         return feat
 
-class STASUNet(nn.Module):
+class BVIMamba(nn.Module):
     """ BVIMamba for low-light video enhancement
 
     Ref Paper:
@@ -135,7 +135,7 @@ class STASUNet(nn.Module):
                  window_size = 7,
                  patch_norm=False,
                  final_upsample="Dual up-sample"):
-        super(STASUNet, self).__init__()
+        super(BVIMamba, self).__init__()
 
         if isinstance (img_size, int):
             img_size = [img_size, img_size] 
